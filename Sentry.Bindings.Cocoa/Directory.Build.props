@@ -1,0 +1,68 @@
+<Project>
+
+  <Import Project="..\Directory.Build.props" />
+
+  <PropertyGroup>
+    <!--Generate xml docs for all projects under 'src'-->
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+
+    <Authors>Sentry Team and Contributors</Authors>
+    <Company>Sentry.io</Company>
+    <Product>Sentry</Product>
+
+    <PackageTags>Sentry;GetSentry;Error-Reporting;Crash-Reporting;Exception-Handling</PackageTags>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryRoot>$(MSBuildThisFileDirectory)</RepositoryRoot>
+    <RepositoryUrl>https://github.com/getsentry/sentry-dotnet</RepositoryUrl>
+
+    <PackageIcon>sentry-nuget.png</PackageIcon>
+    <PackageProjectUrl>https://sentry.io</PackageProjectUrl>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+
+    <!--
+      SourceLink configuration
+      See https://github.com/dotnet/sourcelink/blob/main/README.md
+      And https://learn.microsoft.com/dotnet/core/project-sdk/msbuild-props
+    -->
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <IncludeSymbols>true</IncludeSymbols>
+    <SymbolPackageFormat>snupkg</SymbolPackageFormat>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+
+    <Nullable>annotations</Nullable>
+    <CodeAnalysisRuleSet>$(MSBuildThisFileDirectory)CodeAnalysis.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+
+  <!-- Only compile with IsAotCompatible on .NET 8.0 and later -->
+  <PropertyGroup Condition="($(TargetFramework.StartsWith('net8')) Or $(TargetFramework.StartsWith('net9')))">
+    <!-- `FrameworkSupportsAot` is a custom property we use to centralise this logic for enabling `IsAotCompatible`. As
+    of very recently, this logic is fairly simple (net8.0 or later) but it's historically been more complex and very
+    volatile (as we learn more about the constraints of targeting AOT compilation). We may be able to remove this custom
+    property once we have confidence that this logic is unlikely to change again.
+    -->
+    <FrameworkSupportsAot>true</FrameworkSupportsAot>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <!-- Used by SIL.ReleaseTasks below -->
+    <ChangelogFile>$(MSBuildThisFileDirectory)..\CHANGELOG.md</ChangelogFile>
+    <AppendToReleaseNotesProperty>
+      <![CDATA[-->
+      See full changelog at https://github.com/getsentry/sentry-dotnet/blob/main/CHANGELOG.md]]>
+    </AppendToReleaseNotesProperty>
+    <VersionRegex>^## (.+)</VersionRegex>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="$(MSBuildThisFileDirectory)..\.assets\sentry-nuget.png" Pack="true" PackagePath="" />
+    <None Include="$(MSBuildThisFileDirectory)..\README.md" Pack="true" PackagePath="" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Used to pull the CHANGELOG.md into the NuGet package Release Notes section -->
+    <PackageReference Include="SIL.ReleaseTasks" Version="2.5.0" PrivateAssets="All" Condition="'$(Configuration)' != 'Debug'" />
+  </ItemGroup>
+
+</Project>
